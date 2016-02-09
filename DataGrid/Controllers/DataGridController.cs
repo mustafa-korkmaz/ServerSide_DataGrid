@@ -16,8 +16,11 @@ namespace DataGrid.Controllers
         }
 
 
-        public ActionResult FillGrid(int draw, int start, int length,int playWith)
+        public ActionResult FillGrid(int draw, int start, int length ,int playWith)
         {
+            string order = Request.QueryString["order[0][column]"];
+            string orderBy = Request.QueryString["order[0][dir]"];
+
             DataGridResponse resp=new DataGridResponse();
             resp.draw = draw;
             resp.recordsTotal = playWith;
