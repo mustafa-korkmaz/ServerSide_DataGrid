@@ -10,23 +10,17 @@ namespace DataGrid.Models
     /// </summary>
     public class DataGridModel
     {
-        public DataGridRequestQueryStringData RequestQueryStringData { get; set; }
-        public DataGridResponseData ResponseData { get; set; }
     }
 
-    public class DataGridRequestQueryStringData
+    public class DataGridRequestQueryString
     {
-        public int Start { get; set; }
-        public int Length { get; set; }
-        public int Draw { get; set; }
-    }
-
-    public class DataGridResponseData
-    {
-        public int Draw { get; set; }
-        public int TotalRecords { get; set; }
-        public int RecordsFiltered { get; set; }
-        public string Data { get; set; }
+        public int start { get; set; }
+        public int length { get; set; }
+        public int draw { get; set; }
+        public int playWith { get; set; }
+        public int orderedColumnIndex { get; set; }
+        public string orderedColumnName { get; set; }
+        public string orderBy { get; set; }  //asc - desc?
     }
 
     public class DataGridResponse
@@ -35,5 +29,11 @@ namespace DataGrid.Models
         public int recordsTotal { get; set; }
         public int recordsFiltered { get; set; }
         public List<CustomerModel> data { get; set; }
+    }
+
+    public enum DataGridOrderType
+    {
+        Asc,
+        Desc
     }
 }

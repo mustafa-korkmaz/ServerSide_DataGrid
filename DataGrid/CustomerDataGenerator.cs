@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web;
+using System.Web.UI.WebControls;
 using DataGrid.Models;
 
 namespace DataGrid
@@ -15,19 +17,24 @@ namespace DataGrid
         public List<DateTime> StartDateList { get; private set; }
         public List<decimal> SalaryList { get; private set; }
 
-        public List<CustomerModel> GenerateCustomerList(int start, int length, int playWith)
+        public List<CustomerModel> GenerateCustomerList(DataGridRequestQueryString queryString)
         {
+            DataGridOrderType orderType = queryString.orderBy == "asc" ? DataGridOrderType.Asc : DataGridOrderType.Desc;
 
             if (HttpContext.Current.Session["customers"] != null)
             {
                 var list = HttpContext.Current.Session["customers"] as List<CustomerModel>;
 
-                if (list.Count == playWith)
+                if (list.Count == queryString.playWith)
                 {
-                    return list.Skip(start).Take(length).ToList();
+                    var sessionList = Sort(list, queryString.orderedColumnName, orderType);
+                    return sessionList.Skip(queryString.start).Take(queryString.length).ToList();
                 }
             }
             var customerList = new List<CustomerModel>();
+
+            #region Generate sample data
+
             FirstNameList = new List<string>();
 
             FirstNameList.Add("Mustafa");
@@ -96,7 +103,7 @@ namespace DataGrid
                 var d = random.NextDouble() * (500 - 100) + 100;
                 SalaryList.Add(Convert.ToDecimal(Math.Round(d, 2)));
             }
-            for (int i = 0; i < playWith; i++)
+            for (int i = 0; i < queryString.playWith; i++)
             {
                 var firstName = FirstNameList[random.Next(0, 14)];
                 var lastName = LastNameList[random.Next(0, 14)];
@@ -115,8 +122,39 @@ namespace DataGrid
                     StartDate = startDate
                 });
             }
+
+            #endregion Generate sample data
+
             HttpContext.Current.Session["customers"] = customerList;
-            return customerList.Skip(start).Take(length).ToList();
+
+            var customerQuery = Sort(customerList, queryString.orderedColumnName, orderType);
+            return customerQuery.Skip(queryString.start).Take(queryString.length).ToList();
+        }
+
+        private IOrderedEnumerable<T> Sort<T>(List<T> unSortedlist, string propertyName, DataGridOrderType orderType)
+        {
+            bool isDateOrdering = propertyName.ToLower().Contains("date");
+
+            PropertyInfo pi = typeof(T).GetProperty(propertyName);
+            switch (orderType)
+            {
+                case DataGridOrderType.Asc:
+
+                    if (isDateOrdering)
+                    {
+                        return unSortedlist.OrderBy(x => DateTime.Parse(pi.GetValue(x, null).ToString()));
+                    }
+                    return unSortedlist.OrderBy(x => pi.GetValue(x, null));
+                case DataGridOrderType.Desc:
+
+                    if (isDateOrdering)
+                    {
+                        return unSortedlist.OrderByDescending(x => DateTime.Parse(pi.GetValue(x, null).ToString()));
+                    }
+                    return unSortedlist.OrderByDescending(x => pi.GetValue(x, null));
+
+                default: return null;
+            }
         }
     }
 }

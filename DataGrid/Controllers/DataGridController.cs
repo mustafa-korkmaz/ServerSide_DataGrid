@@ -15,17 +15,27 @@ namespace DataGrid.Controllers
             return View();
         }
 
-
-        public ActionResult FillGrid(int draw, int start, int length ,int playWith)
+        /// <summary>
+        /// xhr method that works with dataTables.js server side table
+        /// </summary>
+        /// <param name="queryString"></param>
+        /// <returns></returns>
+        public ActionResult FillDataGrid(DataGridRequestQueryString queryString)
         {
-            string order = Request.QueryString["order[0][column]"];
-            string orderBy = Request.QueryString["order[0][dir]"];
+            queryString.orderedColumnIndex = Int32.Parse(Request.QueryString["order[0][column]"]);
 
-            DataGridResponse resp=new DataGridResponse();
-            resp.draw = draw;
-            resp.recordsTotal = playWith;
-            resp.recordsFiltered = playWith;
-            resp.data = new CustomerDataGenerator().GenerateCustomerList(start,length,playWith);
+            var columnNameIdentifier = string.Format("columns[{0}][data]", queryString.orderedColumnIndex);
+            queryString.orderedColumnName = Request.QueryString[columnNameIdentifier];
+        
+            queryString.orderBy = Request.QueryString["order[0][dir]"];
+
+            DataGridResponse resp = new DataGridResponse
+            {
+                draw = queryString.draw,
+                recordsTotal = queryString.playWith,
+                recordsFiltered = queryString.playWith,
+                data = new CustomerDataGenerator().GenerateCustomerList(queryString)
+            };
 
             return Json(resp, JsonRequestBehavior.AllowGet);
         }

@@ -11,67 +11,99 @@
 <br />
 <label> <i>(refresh page with Ctrl+F5 if you want to change data count, else you got reinitilalizing error)</i> </label>
 <br />
-    <br />
-    <table id="example" class="display" cellspacing="0" width="100%">
-        <thead>
+<br />
+<table id="example" class="display" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>Position</th>
+            <th>Office</th>
+            <th>Start date</th>
+            <th>Salary</th>
+        </tr>
+    </thead>
+ 
+    <tfoot>
             <tr>
-                <th>First name</th>
-                <th>Last name</th>
-                <th>Position</th>
-                <th>Office</th>
-                <th>Start date</th>
-                <th>Salary</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
             </tr>
-        </thead>
-        @*<tfoot>
-                <tr>
-                    <th>First name</th>
-                    <th>Last name</th>
-                    <th>Position</th>
-                    <th>Office</th>
-                    <th>Start date</th>
-                    <th>Salary</th>
-                </tr>
-            </tfoot>*@
-    </table>
+        </tfoot>
+</table>
 
-    @section scripts
+@section scripts
     {
-        <script>
-            $("#go").click(function() {
-                initializeTable();
+    <script>
+        $("#go").click(function () {
+
+            initializeTable();
+        });
+
+        function initializeTable() {
+
+            $('#example').DataTable({
+                "bFilter": false, //remove search text box
+                "bStateSave": true,
+                "iCookieDuration": 1000, //expiration of cookies for state saving
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "@Url.Action("FillDataGrid", "DataGrid")",
+                    "data": function (d) {
+                        d.playWith = $("#data-count").val().trim();
+                    }
+                },
+                "footerCallback": function (row, data, start, end, display) {
+                    var api = this.api(), data;
+
+                    // Remove the formatting to get integer data for summation
+                    var intVal = function (i) {
+                        return typeof i === 'string' ?
+                            i.replace(/[\$,]/g, '') * 1 :
+                            typeof i === 'number' ?
+                            i : 0;
+                    };
+
+                    // Total over this page
+                    pageTotal = api
+                        .column(5, { page: 'current' })
+                        .data()
+                        .reduce(function (a, b) {
+                            return getFloatValue(a) + getFloatValue(b);
+                        }, 0);
+
+                    // Update footer
+                    $(api.column(5).footer()).html(
+                        pageTotal.toFixed(2)
+                    );
+                },
+                "columns":
+                [
+                    { "data": "FirstName", "orderable": true },
+                    { "data": "LastName", "orderable": false },
+                    { "data": "Position", "orderable": true },
+                    { "data": "Office", "orderable": false },
+                    { "data": "StartDate", "orderable": true },
+                    { "data": "Salary", "orderable": true }
+                ]
             });
-        
-            function initializeTable() {
 
-                $('#example').DataTable({
-                    "bFilter": false, //remove search text box
-                    "bStateSave": true,
-                    "iCookieDuration": 1000, //expiration of cookies for state saving
-                    "processing": true,
-                    "serverSide": true,
-                    "ajax": {
-                        "url": "@Url.Action("FillGrid", "DataGrid")",
-                        "data": function(d) {
-                            d.playWith = $("#data-count").val().trim();
-                        }
-                    },
-                    "columns":
-                    [
-                        { "data": "FirstName", "orderable": true },
-                        { "data": "LastName", "orderable": false },
-                        { "data": "Position", "orderable": true },
-                        { "data": "Office", "orderable": false },
-                        { "data": "StartDate", "orderable": true },
-                        { "data": "Salary", "orderable": true }
-                    ]
-                });
+        }
 
-            }
+        //    document.getElementById(table_id).deleteTFoot(); // delete footer of the related table
 
-            //    document.getElementById(table_id).deleteTFoot(); // delete footer of the related table
+        function getFloatValue(input) {
+            var s = String(input);
+            var result = parseFloat(s.replace(",", "."));
+            return result;
+        }
 
-        </script>
-    }
+    </script>
+}
 
 
