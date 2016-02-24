@@ -34,7 +34,7 @@ namespace DataGrid.Controllers
             
             model.recordsTotal = rideWith;
             model.data = new CustomerDataGenerator().GenerateCustomerList(queryString,rideWith);
-      
+
             return model;
         }
 

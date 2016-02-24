@@ -23,22 +23,24 @@
                 <th>Salary</th>
             </tr>
         </thead>
-        @*<tfoot>
+ 
+    <tfoot>
                 <tr>
-                    <th>First name</th>
-                    <th>Last name</th>
-                    <th>Position</th>
-                    <th>Office</th>
-                    <th>Start date</th>
-                    <th>Salary</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
                 </tr>
-            </tfoot>*@
+        </tfoot>
     </table>
 
     @section scripts
     {
         <script>
-            $("#go").click(function() {
+        $("#go").click(function () {
+
                 initializeTable();
             });
         
@@ -56,6 +58,30 @@
                             d.rideWith = $("#data-count").val().trim();
                         }
                     },
+                "footerCallback": function (row, data, start, end, display) {
+                    var api = this.api(), data;
+
+                    // Remove the formatting to get integer data for summation
+                    var intVal = function (i) {
+                        return typeof i === 'string' ?
+                            i.replace(/[\$,]/g, '') * 1 :
+                            typeof i === 'number' ?
+                            i : 0;
+                    };
+
+                    // Total over this page
+                    pageTotal = api
+                        .column(5, { page: 'current' })
+                        .data()
+                        .reduce(function (a, b) {
+                            return getFloatValue(a) + getFloatValue(b);
+                        }, 0);
+
+                    // Update footer
+                    $(api.column(5).footer()).html(
+                        pageTotal.toFixed(2)
+                    );
+                },
                     "columns":
                     [
                         { "data": "FirstName", "orderable": true },
@@ -70,6 +96,12 @@
             }
 
             //    document.getElementById(table_id).deleteTFoot(); // delete footer of the related table
+
+        function getFloatValue(input) {
+            var s = String(input);
+            var result = parseFloat(s.replace(",", "."));
+            return result;
+        }
 
         </script>
     }
