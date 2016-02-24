@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using DataGrid.Models;
+using DataGrid.ViewModels;
 using Newtonsoft.Json;
 
 namespace DataGrid.Controllers
@@ -16,18 +16,26 @@ namespace DataGrid.Controllers
         }
 
 
-        public ActionResult FillGrid(int draw, int start, int length ,int playWith)
+        public ActionResult FillGrid(DataGridRequestQueryString queryString, int rideWith)
         {
-            string order = Request.QueryString["order[0][column]"];
-            string orderBy = Request.QueryString["order[0][dir]"];
-
-            DataGridResponse resp=new DataGridResponse();
-            resp.draw = draw;
-            resp.recordsTotal = playWith;
-            resp.recordsFiltered = playWith;
-            resp.data = new CustomerDataGenerator().GenerateCustomerList(start,length,playWith);
+            DataGridResponseViewModel resp = GetResponse(queryString, rideWith);
 
             return Json(resp, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <summary>
+        /// assume that tihs data comes from business layer.
+        /// </summary>
+        /// <param name="queryString"></param>
+        /// <returns></returns>
+        private DataGridResponseViewModel GetResponse(DataGridRequestQueryString queryString, int rideWith)
+        {
+            DataGridResponseViewModel model = new DataGridResponseViewModel(queryString);
+            
+            model.recordsTotal = rideWith;
+            model.data = new CustomerDataGenerator().GenerateCustomerList(queryString,rideWith);
+      
+            return model;
         }
 
     }

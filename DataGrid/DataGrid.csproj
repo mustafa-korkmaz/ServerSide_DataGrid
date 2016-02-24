@@ -162,6 +162,8 @@
     <Compile Include="Controllers\DataGridController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="CustomerDataGenerator.cs" />
+    <Compile Include="ViewModels\CustomerModel.cs" />
+    <Compile Include="ViewModels\DataGridViewModel.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
